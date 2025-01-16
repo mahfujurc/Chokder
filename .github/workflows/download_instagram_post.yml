@@ -1,10 +1,12 @@
-name: Download Instagram Post
+name: Download Unsplash Image
 
 on:
-  workflow_dispatch:  # Allows manual triggering of the action
+  workflow_dispatch:  # Allows manual triggering of the workflow
+  schedule:
+    - cron: '0 0 * * *'  # Optional: Automatically trigger the workflow every day at midnight
 
 jobs:
-  download_instagram_post:
+  download_image:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,39 +18,36 @@ jobs:
       with:
         python-version: '3.8'
 
-    - name: Install Instaloader
+    - name: Install required Python libraries
       run: |
         python -m pip install --upgrade pip
-        pip install instaloader
+        pip install requests
 
-    - name: Create folder for download
-      run: |
-        mkdir -p downloaded_posts  # Create a folder to store the downloaded posts
-
-    - name: Download Instagram Post
+    - name: Download image from Unsplash
       run: |
         python3 - <<EOF
-import instaloader
+import requests
 import os
 
-# Instagram post URL
-post_url = 'https://www.instagram.com/p/DEZ52_bCVj1/?igsh=YzljYTk1ODg3Zg=='  # Replace with the Instagram post URL you want to download
+# Direct image URL from Unsplash
+image_url = "https://plus.unsplash.com/premium_photo-1736798695947-2c7661f72bc8?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 
-# Initialize Instaloader
-L = instaloader.Instaloader()
+# Create a folder to save the image (if not exists)
+os.makedirs("downloaded_images", exist_ok=True)
 
-# If login is required, uncomment the following lines and use GitHub secrets for credentials
-# L.login(os.getenv('INSTAGRAM_USERNAME'), os.getenv('INSTAGRAM_PASSWORD'))  # Uncomment this if login is required
+# Get the image content
+response = requests.get(image_url)
 
-# Extract shortcode from URL (this is part of the post URL)
-shortcode = post_url.split('/')[-2]
+# Check if the request was successful
+if response.status_code == 200:
+    # Extract the image filename from the URL (optional: customize if necessary)
+    image_filename = image_url.split("/")[-1].split("?")[0]
 
-# Create a target directory (where the post will be downloaded)
-target_directory = 'downloaded_posts'  # Folder name
+    # Save the image in the 'downloaded_images' folder
+    with open(f"downloaded_images/{image_filename}", "wb") as file:
+        file.write(response.content)
+    print(f"Image successfully downloaded: {image_filename}")
+else:
+    print("Failed to download the image")
 
-# Download the post using Instaloader
-post = instaloader.Post.from_shortcode(L.context, shortcode)
-L.download_post(post, target=target_directory)  # This saves the post in the 'downloaded_posts' folder
-
-print(f'Post downloaded successfully into {target_directory}!')
 EOF
