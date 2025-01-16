@@ -1,0 +1,54 @@
+name: Download Instagram Post
+
+on:
+  workflow_dispatch: # Allows manual triggering of the action
+
+jobs:
+  download_instagram_post:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python environment
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install Instaloader
+      run: |
+        python -m pip install --upgrade pip
+        pip install instaloader
+
+    - name: Create folder for download
+      run: |
+        mkdir -p downloaded_posts  # Create a folder to store the downloaded posts
+
+    - name: Download Instagram Post
+      run: |
+        python -c "
+import instaloader
+import os
+
+# Instagram post URL
+post_url = 'https://www.instagram.com/p/DEZ52_bCVj1/?igsh=YzljYTk1ODg3Zg=='  # Replace with the Instagram post URL you want to download
+
+# Initialize Instaloader
+L = instaloader.Instaloader()
+
+# If login is required, uncomment the following lines and use GitHub secrets for credentials
+# L.login(os.getenv('INSTAGRAM_USERNAME'), os.getenv('INSTAGRAM_PASSWORD'))  # Uncomment this if login is required
+
+# Extract shortcode from URL (this is part of the post URL)
+shortcode = post_url.split('/')[-2]
+
+# Create a target directory (where the post will be downloaded)
+target_directory = 'downloaded_posts'  # Folder name
+
+# Download the post using Instaloader
+post = instaloader.Post.from_shortcode(L.context, shortcode)
+L.download_post(post, target=target_directory)  # This saves the post in the 'downloaded_posts' folder
+
+print(f'Post downloaded successfully into {target_directory}!')
+"
