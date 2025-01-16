@@ -27,7 +27,7 @@ jobs:
 
     - name: Download Instagram Post
       run: |
-        python3 -c "
+        python3 - <<EOF
 import instaloader
 import os
 
@@ -51,4 +51,4 @@ post = instaloader.Post.from_shortcode(L.context, shortcode)
 L.download_post(post, target=target_directory)  # This saves the post in the 'downloaded_posts' folder
 
 print(f'Post downloaded successfully into {target_directory}!')
-"
+EOF
