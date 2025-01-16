@@ -1,7 +1,7 @@
 name: Download Instagram Post
 
 on:
-  workflow_dispatch: # Allows manual triggering of the action
+  workflow_dispatch:  # Allows manual triggering of the action
 
 jobs:
   download_instagram_post:
@@ -27,7 +27,7 @@ jobs:
 
     - name: Download Instagram Post
       run: |
-        python -c "
+        python3 -c "
 import instaloader
 import os
 
